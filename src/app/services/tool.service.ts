@@ -4,13 +4,14 @@ import { Observable } from 'rxjs';
 import { Tool } from '../models/tool.model'; // Import the Tool model
 import { Category } from '../models/category.model'; // Import Category if needed for typing
 import { SortOption, PricingOption } from './filter.service'; // Import SortOption and PricingOption
+import { environment } from '../../environments/environment'; // <-- Import environment
 
 @Injectable({
   providedIn: 'root'
 })
 export class ToolService {
   private http = inject(HttpClient); // Inject HttpClient
-  private apiUrl = 'http://localhost:8080/api/tools'; // Backend API URL
+  private baseApiUrl = environment.backendApiUrl; // <-- Use environment variable
 
   constructor() { }
 
@@ -21,6 +22,7 @@ export class ToolService {
     pricingOptions?: PricingOption[] | null // Add pricingOptions parameter
   ): Observable<Tool[]> {
     let params = new HttpParams();
+    const toolsUrl = `${this.baseApiUrl}/tools`; // Construct full URL
 
     // Append category names
     if (categoryNames && categoryNames.length > 0) {
@@ -46,13 +48,12 @@ export class ToolService {
       });
     }
 
-    return this.http.get<Tool[]>(this.apiUrl, { params });
+    return this.http.get<Tool[]>(toolsUrl, { params });
   }
 
   // Method to get a single tool by its ID
   getToolById(id: string | number): Observable<Tool> {
-    // Construct the URL for the specific tool
-    const toolUrl = `${this.apiUrl}/${id}`;
+    const toolUrl = `${this.baseApiUrl}/tools/${id}`; // Construct full URL
     return this.http.get<Tool>(toolUrl);
     // Add error handling (e.g., for 404 Not Found)
   }
