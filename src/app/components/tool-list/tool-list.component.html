@@ -1,0 +1,10 @@
+<!-- Remove the basic <p> tag, or add styling if needed -->
+<!-- <p>Tool List:</p> -->
+
+<div *ngIf="tools$ | async as tools; else loading" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+  <app-tool-card *ngFor="let tool of tools" [tool]="tool"></app-tool-card>
+</div>
+
+<ng-template #loading>
+  <p class="text-center text-gray-400">Loading tools...</p>
+</ng-template>

@@ -1,0 +1,27 @@
+<a *ngIf="tool" [routerLink]="['/tool', tool.id]">
+  <div class="bg-gray-800 border border-gray-700 rounded-lg shadow-md hover:shadow-lg hover:border-teal-500 transition duration-200 ease-in-out h-full flex flex-col overflow-hidden">
+    <!-- Display image if URL exists -->
+    <div *ngIf="tool.imageUrl" class="h-32 w-full flex-shrink-0">
+      <img [src]="tool.imageUrl" [alt]="tool.name" class="w-full h-full object-cover">
+    </div>
+    <!-- Placeholder if no image -->
+    <div *ngIf="!tool.imageUrl" class="h-32 w-full bg-gray-700 flex items-center justify-center text-gray-500 flex-shrink-0">
+       <span>No Image</span>
+    </div>
+
+    <!-- Card Content -->
+    <div class="p-4 flex flex-col flex-grow">
+      <h3 class="text-lg font-semibold mb-2 text-white">{{ tool.name }}</h3>
+      <p class="text-gray-400 text-sm flex-grow mb-4 line-clamp-4">{{ tool.description }}</p>
+
+      <!-- Categories/Tags/Link can go here within the padded area -->
+      <!-- Example: Add category display -->
+      <div class="mt-auto pt-2 border-t border-gray-700">
+        <span *ngIf="tool.category" class="inline-block bg-gray-700 text-teal-300 text-xs px-2 py-1 rounded">
+            {{ tool.category.name }}
+        </span>
+        <!-- Add other tags/pricing later -->
+      </div>
+    </div>
+  </div>
+</a>

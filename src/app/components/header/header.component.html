@@ -1,0 +1,27 @@
+<header class="bg-gray-700 p-2 md:p-4 shadow-md text-gray-300">
+  <!-- Use justify-between to push left/right groups to edges -->
+  <div class="container mx-auto flex flex-wrap justify-between items-center gap-4">
+
+    <!-- Left Navigation Group -->
+    <nav class="flex items-center space-x-4 order-1 md:order-none">
+      <a href="#" class="hover:text-teal-400">Added Today</a>
+      <a href="#" class="hover:text-teal-400">AI News</a>
+      <a href="#" class="hover:text-teal-400">Videos</a>
+    </nav>
+
+    <!-- Center Logo linked to home -->
+    <!-- Use order-2 to place it visually in center on small screens if wrapping occurs -->
+    <a routerLink="/" class="flex items-center order-none md:order-none mx-auto md:mx-0">
+      <img src="assets/images/AI-Gator.png" alt="AI-Gator Logo" class="h-16 mr-2"> <!-- Adjusted height back to h-16, h-22 is large -->
+    </a>
+
+    <!-- Right-side Links/Actions Group -->
+    <div class="flex items-center space-x-4 order-3 md:order-none">
+       <span class="text-sm font-semibold">Help</span>
+       <a href="#" class="hover:text-teal-400 text-sm">Glossary</a>
+       <a href="#" class="hover:text-teal-400 text-sm">FAQ</a>
+       <a routerLink="/submit" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 rounded-md text-sm font-semibold transition duration-150 ease-in-out">Submit A Tool</a>
+    </div>
+
+  </div>
+</header>

@@ -1,0 +1,37 @@
+<aside class="bg-gray-800 p-4 rounded-lg h-full flex flex-col">
+  <h2 class="text-lg font-semibold mb-4 text-white">Categories</h2>
+
+  <!-- "All Categories" Option -->
+  <button
+    (click)="selectCategory(null)"
+    [ngClass]="{
+      'bg-teal-600 text-white': selectedCategory === null,
+      'hover:text-teal-400': selectedCategory !== null
+    }"
+    class="w-full text-left p-2 rounded mb-2 transition duration-150 ease-in-out">
+    All Categories
+  </button>
+
+  <!-- Loading/Error State (Optional but Recommended) -->
+  <!-- <ng-container *ngIf="categories$ | async as categories; else loadingCats"> -->
+
+  <ul class="flex-grow overflow-y-auto">
+    <!-- Use ngIf to wait for categories$ observable -->
+    <li *ngFor="let category of categories$ | async"
+        class="mb-1">
+      <button
+        (click)="selectCategory(category.name)"
+        [ngClass]="{
+          'bg-teal-600 text-white': category.name === selectedCategory,
+          'hover:text-teal-400': category.name !== selectedCategory
+        }"
+        class="w-full text-left p-2 rounded transition duration-150 ease-in-out">
+        {{ category.name }}
+      </button>
+    </li>
+  </ul>
+
+  <!-- </ng-container> -->
+  <!-- <ng-template #loadingCats><p class="text-gray-400">Loading categories...</p></ng-template> -->
+
+</aside>
