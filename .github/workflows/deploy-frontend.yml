@@ -1,0 +1,72 @@
+name: Deploy Frontend to Cloud Run
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+# Permissions needed for Google Cloud authentication
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  # Replace with your specific values (use GitHub Secrets for sensitive info)
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # e.g., my-gcp-project-id
+  GCP_WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }} # e.g., projects/123456/locations/global/workloadIdentityPools/my-pool/providers/my-provider
+  GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_FRONTEND_SERVICE_ACCOUNT }} # e.g., frontend-deployer@my-gcp-project-id.iam.gserviceaccount.com
+  GAR_LOCATION: ${{ secrets.GAR_LOCATION }} # e.g., us-central1
+  GAR_REPOSITORY: "agregator-frontend-repo" # Or use secrets.GAR_FRONTEND_REPOSITORY if different from backend
+  SERVICE_NAME_DEV: "agregator-frontend-dev"
+  SERVICE_NAME_PROD: "agregator-frontend-prod"
+  REGION: "us-central1" # Or use secrets.GCP_REGION
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine Environment and Service Name
+        id: vars
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "SERVICE_NAME=${{ env.SERVICE_NAME_PROD }}" >> $GITHUB_OUTPUT
+            echo "TAG=prod-${{ github.sha }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" == "refs/heads/dev" ]; then
+            echo "SERVICE_NAME=${{ env.SERVICE_NAME_DEV }}" >> $GITHUB_OUTPUT
+            echo "TAG=dev-${{ github.sha }}" >> $GITHUB_OUTPUT
+          else
+            echo "Branch is not dev or main, skipping deployment."
+            exit 1 # Or handle differently
+          fi
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.GCP_WIF_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Authorize Docker push
+        run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
+
+      - name: Build and Push Docker image
+        env:
+          IMAGE_NAME: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ steps.vars.outputs.SERVICE_NAME }}
+        run: |
+          docker build -t $IMAGE_NAME:${{ steps.vars.outputs.TAG }} -t $IMAGE_NAME:latest .
+          docker push $IMAGE_NAME --all-tags
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ steps.vars.outputs.SERVICE_NAME }}
+          image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ steps.vars.outputs.SERVICE_NAME }}:${{ steps.vars.outputs.TAG }}
+          region: ${{ env.REGION }}
+          flags: "--allow-unauthenticated --platform=managed" 
