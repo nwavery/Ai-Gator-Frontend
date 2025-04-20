@@ -58,5 +58,14 @@ export class ToolService {
     // Add error handling (e.g., for 404 Not Found)
   }
 
-  // Add methods later for getting categories, single tools, adding tools, etc.
+  // Method to submit a new tool
+  // Backend now returns 202 Accepted with potentially no body or a simple message
+  submitTool(toolData: any): Observable<any> { // Changed return type from Observable<Tool>
+    const submitUrl = `${this.baseApiUrl}/tools`; // POST endpoint
+    // Payload transformation is handled in the component now
+    return this.http.post<any>(submitUrl, toolData); // Changed type parameter to <any>
+    // Add error handling later
+  }
+
+  // Add methods later for getting categories, adding tools, etc.
 }

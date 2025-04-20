@@ -6,6 +6,8 @@ import { Observable } from 'rxjs';
 import { CategoryService } from '../../services/category.service';
 import { Category } from '../../models/category.model';
 import { SeoService } from '../../services/seo.service';
+import { ToolService } from '../../services/tool.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-submit-tool',
@@ -17,10 +19,14 @@ import { SeoService } from '../../services/seo.service';
 export class SubmitToolComponent implements OnInit {
   toolForm: FormGroup;
   categories$: Observable<Category[]>;
+  isSubmitting = false;
+  submissionError: string | null = null;
 
   private fb = inject(FormBuilder);
   private categoryService = inject(CategoryService);
   private seoService = inject(SeoService);
+  private toolService = inject(ToolService);
+  private router = inject(Router);
 
   constructor() {
     this.toolForm = this.fb.group({
@@ -42,13 +48,39 @@ export class SubmitToolComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.toolForm.valid) {
-      console.log('Form Submitted!', this.toolForm.value);
-      // TODO: Send data to the backend service
-      // Note: this.toolForm.value.category will contain the selected Category object (or its ID if we change the [ngValue] binding)
-    } else {
-      console.log('Form is invalid');
+    if (this.toolForm.invalid || this.isSubmitting) {
       this.toolForm.markAllAsTouched();
+      return;
     }
+
+    this.isSubmitting = true;
+    this.submissionError = null;
+
+    // Transform the form data to match backend DTO (ToolCreateRequest)
+    const rawValue = this.toolForm.value;
+    const payload = {
+      ...rawValue, // Spread the rest of the form values
+      categoryId: rawValue.category?.id, // Extract category ID
+      tags: rawValue.tags 
+              ? rawValue.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag !== '') 
+              : [], // Split tags string into array, handle empty/null
+    };
+    // Remove the original category object from the payload
+    delete payload.category; 
+
+    // Send the transformed payload
+    this.toolService.submitTool(payload).subscribe({
+      next: (response) => {
+        console.log('Submission accepted by backend.', response);
+        this.isSubmitting = false;
+        this.toolForm.reset();
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        console.error('Submission failed:', err);
+        this.isSubmitting = false;
+        this.submissionError = 'Failed to submit tool. Please try again later.';
+      }
+    });
   }
 }
